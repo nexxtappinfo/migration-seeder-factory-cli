@@ -1,0 +1,125 @@
+{
+  "migrations": [
+    {
+      "action": "create",
+      "table": "sites",
+      "columns": [
+        {
+          "name": "id",
+          "type": "int",
+          "primaryKey": true,
+          "autoIncrement": true
+        },
+        {
+          "name": "name",
+          "type": "varchar",
+          "unique": true,
+          "nullable": false
+        },
+        {
+          "name": "user_id",
+          "type": "int"
+        },
+        {
+          "name": "age",
+          "type": "varchar",
+          "nullable": false,
+          "default": 0
+        },
+        {
+          "name": "dob",
+          "type": "date",
+          "nullable": true
+        },
+        {
+          "name": "createdAt",
+          "type": "timestamp",
+          "default": {
+            "value": "CURRENT_TIMESTAMP"
+          }
+        },
+        {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "default": {
+            "function": "ON_UPDATE_TIMESTAMP"
+          }
+        },
+        {
+          "name": "deletedAt",
+          "type": "timestamp",
+          "nullable": true
+        }
+      ],
+      "indexes": [
+        {
+          "name": "idx_sites_name",
+          "columns": [
+            "name"
+          ],
+          "unique": true
+        }
+      ],
+      "foreignKeys": [
+        {
+          "name": "fk_sites_user",
+          "column": "user_id",
+          "referenceTable": "users",
+          "referenceColumn": "id"
+        }
+      ],
+      "engine": "InnoDB",
+      "charset": "utf8mb4"
+    },
+    {
+      "action": "alter",
+      "table": "sites",
+      "changes": {
+        "add": [
+          {
+            "name": "email",
+            "type": "varchar",
+            "nullable": true
+          },
+          {
+            "name": "owner_id",
+            "type": "int",
+            "nullable": true
+          }
+        ],
+        "modify": [
+          {
+            "name": "age",
+            "type": "varchar(100)",
+            "nullable": false
+          }
+        ],
+        "drop": [
+          "dob"
+        ],
+        "addForeignKeys": [
+          {
+            "name": "fk_sites_owner",
+            "column": "owner_id",
+            "referenceTable": "users",
+            "referenceColumn": "id"
+          }
+        ],
+        "dropForeignKeys": [
+          "fk_sites_user"
+        ],
+        "dropIndex": [
+          "idx_sites_name"
+        ]
+      }
+    }
+  ],
+  "rollback": [
+    {
+      "action": "drop",
+      "table": "sites",
+      "dropIfExists": true,
+      "ignoreForeignAndCascade": true
+    }
+  ]
+}
