@@ -2,7 +2,7 @@
   "name": "migration-seeder-factory",
   "version": "1.1.0",
   "description": "Effortlessly manage migrations, seeders, and factories for PostgreSQL, MySQL, and MongoDB.",
-  "main": "src/index.js",
+  "main": "src/Kernel.js",
   "bin": {
     "nexxt": "./bin/cli.js"
   },
