@@ -1,4 +1,4 @@
-# Migration, Seeder, and Factory Creator
+# Migration, Seeder and Factory Creator
 
 This package provides an easy way to generate migrations, seeders, and factories using built-in commands in Node.js. Developed by **NexxtApp**, this tool streamlines database management for your applications.
 
