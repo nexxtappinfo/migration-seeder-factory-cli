@@ -4,7 +4,7 @@ This package provides an easy way to generate migrations, seeders, and factories
 
 ## Note: MongoDB functionality will be available soon. Meanwhile, all features for MySQL and PostgreSQL are fully functional and ready to use.
 
-For more information about, how to use, check this article - **NexxtApp Medium** at [Migration, Seeder and Factory Creator In Nodejs](https://medium.com/@nexxtapp.social/migration-seeder-and-factory-creator-ae95917200c8).
+For more information - how to use, check this article - **NexxtApp Medium** at [Migration, Seeder and Factory Creator In Nodejs](https://medium.com/@nexxtapp.social/migration-seeder-and-factory-creator-ae95917200c8).
 
 ## Features
 - Generate migrations, seeders, and factories effortlessly
