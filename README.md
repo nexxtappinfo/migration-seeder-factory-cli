@@ -4,6 +4,8 @@ This package provides an easy way to generate migrations, seeders, and factories
 
 ## Note: MongoDB functionality will be available soon. Meanwhile, all features for MySQL and PostgreSQL are fully functional and ready to use.
 
+For more information about, how to use, check this article - **NexxtApp Medium** at [Migration, Seeder and Factory Creator In Nodejs](https://medium.com/@nexxtapp.social/migration-seeder-and-factory-creator-ae95917200c8).
+
 ## Features
 - Generate migrations, seeders, and factories effortlessly
 - Simple CLI commands for quick setup
@@ -94,19 +96,29 @@ npx nexxt seed --db=postgrey
 
 Copyright (c) 2025 **NexxtApp**
 
-You are allowed to use this package in your own projects under the following conditions:
-- You **may use** the package for personal or internal projects.
-- You **must include** this copyright notice in any use of the package.
+## Permissions
+You are granted a **limited, non-exclusive, non-transferable** right to use this software under the following conditions:
 
+- You may use this software **only for personal or internal projects**.
+- You **must** retain this copyright notice in any use of the software.
+
+## Restrictions
 You **may not**:
-1. Modify, alter, or adapt the package in any way.
-2. Distribute, publish, or share the package with any third party.
-3. Sell, sublicense, or claim ownership of the package.
 
-THIS PACKAGE IS PROVIDED "AS IS," WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED. NEXXTAPP SHALL NOT BE LIABLE FOR ANY DAMAGES ARISING FROM ITS USE.
+1. Modify, alter, reverse engineer, or create derivative works based on this software.
+2. Distribute, publish, sublicense, share, or make the software available to any third party.
+3. Sell, rent, lease, or claim ownership of this software or any part of it.
+
+## Enforcement
+Any violation of these terms **immediately revokes** your right to use the software, and legal action may be taken against unauthorized use.
+
+## Disclaimer
+THIS SOFTWARE IS PROVIDED "AS IS," WITHOUT WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES, OR OTHER LIABILITY ARISING FROM THE USE OF THIS SOFTWARE.
+
+By using this software, you acknowledge and agree to these terms.
 
 ---
 For more information, please contact **NexxtApp** at [https://nexxtapp.com](https://nexxtapp.com).
 
-For more information about, how it works - **NexxtApp Medium** at [Migration, Seeder, and Factory Creator Story](https://medium.com/@nexxtapp.social/migration-seeder-and-factory-creator-ae95917200c8).
+For more information about, how it works - **NexxtApp Medium** at [Migration, Seeder and Factory Creator In Nodejs](https://medium.com/@nexxtapp.social/migration-seeder-and-factory-creator-ae95917200c8).
 
