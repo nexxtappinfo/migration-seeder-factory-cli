@@ -116,7 +116,7 @@ module.exports = function (database, dbTypes) {
     }
   }
 
-  const runMigrations = async (dbType) => {
+  const runMigrations = async (dbType, fileName) => {
     try {
       const db = await database.getConnection(dbType);
       if (!db) throw new Error(`${dbType.toUpperCase()} connection is not initialized.`);
@@ -134,7 +134,7 @@ module.exports = function (database, dbTypes) {
       const { currentBatch, executedMigrations } = await getMigrationTableInfo(db, dbType, dbTypes);
       const executedMigrationsSet = new Set(executedMigrations);
 
-      const files = fs.readdirSync(migrationDir).sort();
+      const files = fileName ? [fileName] : fs.readdirSync(migrationDir).sort().reverse();
       for (const file of files) {
         if (executedMigrationsSet.has(file)) {
           logger.warn(`⚠️ Skipping already run migration: ${file}`);

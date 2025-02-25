@@ -26,13 +26,13 @@ const kernel = require('../src/Kernel');
     });
 
   program
-    .command('migrate')
+    .command('migrate [fileName]')
     .option('--db <dbType>', 'Specify database type', DEFAULT_DB_TYPE)
     .description('Run all pending migrations')
-    .action(async (options) => {
+    .action(async (fileName, options) => {
       const dbType = options.db || DEFAULT_DB_TYPE;
       await ensureConnection(dbType);
-      await kernel.controllers.migrations.runMigrations(dbType);
+      await kernel.controllers.migrations.runMigrations(dbType, fileName);
     });
 
   program
