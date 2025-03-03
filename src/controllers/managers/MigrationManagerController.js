@@ -9,13 +9,13 @@ module.exports = function (database, dbTypes) {
             id SERIAL PRIMARY KEY,
             migration VARCHAR(255) NOT NULL,
             batch INT DEFAULT 1 NOT NULL,
-            run_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );`,
       [dbTypes.MYSQL]: `CREATE TABLE IF NOT EXISTS migrations (
             id INT AUTO_INCREMENT PRIMARY KEY,
             migration VARCHAR(255) NOT NULL,
             batch INT DEFAULT 1 NOT NULL,
-            run_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
           );`,
       default: '',
     };
@@ -35,7 +35,7 @@ module.exports = function (database, dbTypes) {
   };
   
   // Utility function to get SQL for adding batch column
-  const getAddBatchColumnSQL = (dbType) => {
+  const getAddBatchColumnQuery = (dbType) => {
     const queries = {
       [dbTypes.PG]: `ALTER TABLE migrations ADD COLUMN batch INT DEFAULT 1 NOT NULL;`,
       [dbTypes.MYSQL]: `ALTER TABLE migrations ADD COLUMN batch INT DEFAULT 1 NOT NULL;`,
@@ -65,18 +65,34 @@ module.exports = function (database, dbTypes) {
     await db.query(sql);
   };
 
+  const checkBatchColumnExists = (columns, dbType) => {
+      if (!columns) return false;
+
+      if (dbType === dbTypes.PG) {
+          return columns.rows?.length > 0;
+      } else if (dbType === dbTypes.MYSQL) {
+           return Array.isArray(columns) && columns.length > 1 && columns[0]?.some(row => row.Field === 'batch');
+      }
+
+      return false;
+  }
+
   const ensureBatchColumn = async (db, dbType) => {
     try {
       const columns = await db.query(getBatchColumnCheckSQL(dbType));
+      const columnExists = checkBatchColumnExists(columns, dbType);
 
-      if (columns.length === 0) {
-        logger.info(`🔄 Adding missing 'batch' column to migrations table.`);
-        const alterSql = getAddBatchColumnSQL(dbType);
-        await db.query(alterSql);
-        logger.info(`✅ 'batch' column added successfully.`);
+      if (columnExists) {
+          return true;
       }
+
+      logger.info(`🔄 Adding missing 'batch' column to migrations table.`);
+      const alterSql = getAddBatchColumnQuery(dbType);
+      await db.query(alterSql);
+      logger.info(`✅ 'batch' column added successfully.`);
+
     } catch (error) {
-      logger.error(`❌ Error checking/adding 'batch' column: ${error.message}`);
+      logger.error(`Error checking/adding 'batch' column: ${error.message}`);
       process.exit(1);
     }
   };
@@ -107,11 +123,11 @@ module.exports = function (database, dbTypes) {
           executedMigrations
         }
       }else{
-        logger.error(`❌ Error! failed to get data from migration table.`);
+        logger.error(`Error! failed to get data from migration table.`);
         process.exit(1);
       }
     } catch (error) {
-      logger.error(`❌ Error! failed to get data from migration table: ${error.message}`);
+      logger.error(`Error! failed to get data from migration table: ${error.message}`);
       process.exit(1);
     }
   }
@@ -134,7 +150,7 @@ module.exports = function (database, dbTypes) {
       const { currentBatch, executedMigrations } = await getMigrationTableInfo(db, dbType, dbTypes);
       const executedMigrationsSet = new Set(executedMigrations);
 
-      const files = fileName ? [fileName] : fs.readdirSync(migrationDir).sort().reverse();
+      const files = fileName ? [`${fileName}.json`] : fs.readdirSync(migrationDir).sort().reverse();
       for (const file of files) {
         if (executedMigrationsSet.has(file)) {
           logger.warn(`⚠️ Skipping already run migration: ${file}`);
@@ -159,10 +175,10 @@ module.exports = function (database, dbTypes) {
         await db.query(insertQuery, [file, currentBatch]);
       }
 
-      logger.info(`✅ Migrations completed for ${dbType.toUpperCase()}`);
+      logger.info(`✅ Migration process completed for ${dbType.toUpperCase()}`);
       process.exit(0);
     } catch (error) {
-      logger.error(`❌ Error running migrations: ${error.message}`);
+      logger.error(`Error running migrations: ${error.message}`);
       process.exit(1);
     }
   };
@@ -179,7 +195,7 @@ module.exports = function (database, dbTypes) {
               return;
           }
 
-          const files = fileName ? [fileName] : fs.readdirSync(migrationDir).sort().reverse();
+          const files = fileName ? [`${fileName}.json`] : fs.readdirSync(migrationDir).sort().reverse();
           for (const file of files) {
               const filePath = path.join(migrationDir, file);
               if (!fs.existsSync(filePath)) {
@@ -212,7 +228,7 @@ module.exports = function (database, dbTypes) {
           logger.info(`✅ Rollback completed for ${dbType.toUpperCase()}`);
           process.exit(0);
       } catch (error) {
-          logger.error(`❌ Error rolling back migrations: ${error.message}`);
+          logger.error(`Error rolling back migrations: ${error.message}`);
           process.exit(1);
       }
   }
@@ -230,12 +246,21 @@ module.exports = function (database, dbTypes) {
 
       const template = JSON.stringify({
         "migrations": [
-          {},
-          {}
+          {
+            "action": "",
+            "table": "",
+            "columns": [],
+            "indexes": [],
+            "foreignKeys": []
+          }
         ],
         "rollback": [
-          {},
-          {}
+          {
+            "action": "",
+            "table": "",
+            "dropIfExists": true,
+            "ignoreForeignAndCascade": true
+          }
         ]
       }, null, 2);
 
@@ -243,7 +268,7 @@ module.exports = function (database, dbTypes) {
       logger.info(`✅ Migration file created: ${filePath}`);
       process.exit(0);
     } catch (error) {
-      logger.error(`❌ Error creating migration: ${error.message}`);
+      logger.error(`Error creating migration: ${error.message}`);
       process.exit(1);
     }
   }
