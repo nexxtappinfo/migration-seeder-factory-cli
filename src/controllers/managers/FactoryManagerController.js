@@ -25,6 +25,16 @@ module.exports = function (dbTypes) {
               "type": 'number|string|longtext|alphan_umaric|float|...',
               "custom": "",
             },
+            "col_name": {
+              "fake": false,
+              "type": 'number|string|longtext|alphan_umaric|float|...',
+              "custom": {
+                "reference_table": {
+                  "table": "",
+                  "column": ""
+                }
+              }
+            },
           }
         ]
       }, null, 2);

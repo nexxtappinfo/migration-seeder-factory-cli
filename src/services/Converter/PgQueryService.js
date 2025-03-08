@@ -21,6 +21,13 @@ const parseMigrationFile = async (fileContent, rollback = false) => {
 
 const generateSQLQueries = (migrations) => {
   const queries = migrations.map(migration => {
+
+    if ((!migration.table || migration.table == '') || (!migration.action || migration.action == '')) {
+      logger.error(`Please Provide Correct Migration Object Values`);
+      process.exit(1);
+      return;
+    }
+  
     if (migration.action === 'create') {
       return createTableQuery(migration);
     } else if (migration.action === 'alter') {
