@@ -98,8 +98,26 @@ const getFakeValue = (type) => {
     }
 }
 
+// Helper function to convert string case based on given type.
+function convertCase(value, caseType) {
+    if (typeof value !== 'string') return value;
+    switch (caseType.toLowerCase()) {
+        case 'lower':
+            return value.toLowerCase();
+        case 'upper':
+            return value.toUpperCase();
+        case 'capitalize':
+            // Capitalize first letter and lower the rest.
+            return value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
+        default:
+            // If no valid conversion is provided, return the original value.
+            return value;
+    }
+}
+
 
 module.exports = {
     getFakeValue,
-    setRegexExpresion
+    setRegexExpresion,
+    convertCase
 };
