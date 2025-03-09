@@ -1,6 +1,6 @@
 const fs = require('fs');
 const path = require('path');
-const { faker } = require('@faker-js/faker');
+const { setRegexExpresion, getFakeValue } = require('../../helpers/Functions');
 
 module.exports = function (database, dbTypes) {
 
@@ -14,54 +14,6 @@ module.exports = function (database, dbTypes) {
     }
     return path.join(process.cwd(), 'database/factory', fileName);
   }
-
-  const getFakeValue = (type) => {
-    switch (type.toLowerCase()) {
-      case 'number': return faker.number.int(); // Any integer
-      case 'smallint': return faker.number.int({ min: -32768, max: 32767 }); // Small integer range
-      case 'mediumint': return faker.number.int({ min: -8388608, max: 8388607 }); // Medium integer range
-      case 'bigint': return faker.number.bigInt({ min: -9223372036854775808n, max: 9223372036854775807n }); // Big integer
-      case 'tinyint': return faker.number.int({ min: 1, max: 999 }); // Tiny integer
-      case 'float': return faker.number.float({ min: -1000, max: 1000, precision: 0.01 }); // Floating-point number
-      case 'double': return faker.number.float({ min: -1000000, max: 1000000, precision: 0.0001 }); // More precise float
-      case 'decimal': return faker.number.float({ min: -9999999999, max: 9999999999, precision: 0.01 }).toFixed(2); // Decimal
-      case 'boolean': return faker.datatype.boolean(); // Boolean value (true/false)
-      case 'uuid': return faker.string.uuid(); // UUID
-      case 'string': return faker.word.words(3); // Random string
-      case 'char': return faker.string.alphanumeric(1); // Single character
-      case 'varchar': return faker.word.words(5); // Short string
-      case 'longtext': return faker.lorem.paragraph(); // Long text
-      case 'alphanumeric': return faker.string.alphanumeric(10); // Alphanumeric
-      case 'email': return faker.internet.email(); // Email address
-      case 'url': return faker.internet.url(); // URL
-      case 'username': return faker.internet.userName(); // Username
-      case 'password': return faker.internet.password(); // Password
-      case 'phone': return faker.phone.number(); // Phone number
-      case 'address': return faker.location.streetAddress(); // Address
-      case 'city': return faker.location.city(); // City
-      case 'state': return faker.location.state(); // State
-      case 'country': return faker.location.country(); // Country
-      case 'zip': return faker.location.zipCode(); // ZIP code
-      case 'ipv4': return faker.internet.ip(); // IPv4 address
-      case 'ipv6': return faker.internet.ipv6(); // IPv6 address
-      case 'company': return faker.company.name(); // Company name
-      case 'color': return faker.color.human(); // Color name
-      case 'hexcolor': return faker.color.rgb(); // Hex color code
-      case 'date': return faker.date.past().toISOString().split('T')[0]; // Date (YYYY-MM-DD)
-      case 'time': return faker.date.recent().toISOString().split('T')[1].split('.')[0]; // Time (HH:MM:SS)
-      case 'datetime': return faker.date.recent().toISOString(); // Full date-time (ISO format)
-      case 'future_date': return faker.date.future().toISOString().split('T')[0]; // Future date
-      case 'past_date': return faker.date.past().toISOString().split('T')[0]; // Past date
-      case 'credit_card': return faker.finance.creditCardNumber(); // Credit card number
-      case 'currency': return faker.finance.currencyCode(); // Currency code (e.g., USD, EUR)
-      case 'iban': return faker.finance.iban(); // IBAN (bank account)
-      case 'bic': return faker.finance.bic(); // BIC/SWIFT code
-      case 'job_title': return faker.person.jobTitle(); // Job title
-      case 'company_suffix': return faker.company.name().split(' ').pop(); // Company suffix (e.g., Inc., LLC)
-      case 'mac_address': return faker.internet.mac(); // MAC address
-      default: return null;
-    }
-  };
 
   async function runSeeders(dbType, fileName = '') {
     try {
@@ -110,39 +62,68 @@ module.exports = function (database, dbTypes) {
             if (factory.columns && factory.columns.length > 0) {
               for (const columnObj of factory.columns) {
                 for (const [colName, colData] of Object.entries(columnObj)) {
-                  if (typeof colData.custom === 'string' && colData.custom !== '') {
-                    // Use custom string directly
-                    columns[colName] = colData.custom;
-                  } else if (typeof colData.custom === 'object' && colData.custom.reference_table) {
-                    // Use reference table value if defined
-                    const { table: refTable, column: refColumn } = colData.custom.reference_table;
-                    if (refTable && refColumn) {
-                      if (dbType === dbTypes.PG) {
-                        const refQuery = `SELECT "${refColumn}" FROM "${refTable}" ORDER BY random() LIMIT 1`;
-                        const refResult = await db.query(refQuery);
-                        if (refResult.rows.length > 0) {
-                          columns[colName] = refResult.rows[0][refColumn];
+                  let value;
+                  // Default fake to false if not provided
+                  const isFake = typeof colData.fake === 'boolean' ? colData.fake : false;
+
+                  if (isFake) {
+                    // Generate fake value regardless of any custom options
+                    value = getFakeValue(colData.type);
+                  } else {
+                    // Check if a custom value is provided
+                    if (colData.custom !== undefined && colData.custom !== null) {
+                      // If custom is an object with a reference_table, then do reference lookup
+                      if (typeof colData.custom === 'object' && colData.custom.reference_table) {
+                        const { table: refTable, column: refColumn } = colData.custom.reference_table;
+                        if (refTable && refColumn) {
+                          if (dbType === dbTypes.PG) {
+                            const refQuery = `SELECT "${refColumn}" FROM "${refTable}" ORDER BY random() LIMIT 1`;
+                            const refResult = await db.query(refQuery);
+                            if (refResult.rows.length > 0) {
+                              value = refResult.rows[0][refColumn];
+                            } else {
+                              logger.warn(`⚠️ No data found in reference table ${refTable}.${refColumn}`);
+                              value = null;
+                            }
+                          } else if (dbType === dbTypes.MYSQL) {
+                            const refQuery = `SELECT \`${refColumn}\` FROM \`${refTable}\` ORDER BY RAND() LIMIT 1`;
+                            const [result] = await db.execute(refQuery);
+                            if (result.length > 0) {
+                              value = result[0][refColumn];
+                            } else {
+                              logger.warn(`⚠️ No data found in reference table ${refTable}.${refColumn}`);
+                              value = null;
+                            }
+                          }
                         } else {
-                          logger.warn(`⚠️ No data found in reference table ${refTable}.${refColumn}`);
-                          columns[colName] = null;
-                        }
-                      } else if (dbType === dbTypes.MYSQL) {
-                        const refQuery = `SELECT \`${refColumn}\` FROM \`${refTable}\` ORDER BY RAND() LIMIT 1`;
-                        const [result] = await db.execute(refQuery);
-                        if (result.length > 0) {
-                          columns[colName] = result[0][refColumn];
-                        } else {
-                          logger.warn(`⚠️ No data found in reference table ${refTable}.${refColumn}`);
-                          columns[colName] = null;
+                          value = null;
                         }
                       }
+                      // If custom is a non-object (like a string or number) and not empty, use it.
+                      else if (typeof colData.custom !== 'object' && colData.custom !== '') {
+                        value = colData.custom;
+                      } else {
+                        value = "";
+                      }
                     } else {
-                      columns[colName] = null;
+                      value = "";
                     }
-                  } else {
-                    // Generate a fake value if enabled, or use custom value if defined
-                    columns[colName] = colData.fake ? getFakeValue(colData.type) : (colData.custom ?? null);
                   }
+
+                  // Apply manipulation if the property exists and the value is a string.
+                  if (
+                    colData.manupulation &&
+                    typeof colData.manupulation === 'object' &&
+                    typeof value === 'string'
+                  ) {
+                    value = setRegexExpresion(
+                      colData.manupulation.regex,
+                      colData.manupulation.replace_with,
+                      value
+                    );
+                  }
+
+                  columns[colName] = value;
                 }
               }
             }
@@ -227,7 +208,6 @@ module.exports = function (database, dbTypes) {
       process.exit(1);
     }
   }
-
 
 
   const createSeeder = (dbType, fileName) => {

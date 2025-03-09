@@ -143,7 +143,7 @@ module.exports = function (database, dbTypes) {
       const migrationDir = getMigrationsPath(dbType);
       if (!fs.existsSync(migrationDir)) {
         logger.info(`⚠️ No migrations found at: ${migrationDir}`);
-        process.exit(1);
+        process.exit(0);
         return;
       }
 

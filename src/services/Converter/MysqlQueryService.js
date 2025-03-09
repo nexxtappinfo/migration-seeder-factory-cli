@@ -5,16 +5,16 @@ async function parseMigrationFile(fileContent, rollback = false) {
             if (migrationData.rollback) {
                 return generateSQLQueries(migrationData.rollback);
             }
-            logger.error(`❌ Error parsing migration file! rollback key not defined in object`);
+            logger.error(`Error parsing migration file! rollback key not defined in object`);
             return null;
         }
         if (migrationData.migrations) {
             return generateSQLQueries(migrationData.migrations);
         }
-        logger.error(`❌ Error parsing migration file! migrations key not defined in object`);
+        logger.error(`Error parsing migration file! migrations key not defined in object`);
         return null;
     } catch (error) {
-        logger.error(`❌ Error parsing migration file: ${error.message}`);
+        logger.error(`Error parsing migration file: ${error.message}`);
         return null;
     }
 }
@@ -127,12 +127,18 @@ function alterTableQuery(migration) {
     return `ALTER TABLE ${table} ${changes.join(', ')};`;
 }
 
-function dropTableQuery(migration) {
-    const quote = '`';
-    const table = `${quote}${migration.table}${quote}`;
-    const cascade = migration.ignoreForeignAndCascade ? ' CASCADE' : '';
-    return `DROP TABLE IF EXISTS ${table}${cascade};`;
-}
+const dropTableQuery = (migration) => {
+    const quote = '"';
+    let query = `DROP TABLE`;
+    if (migration.dropIfExists) {
+      query += ' IF EXISTS';
+    }
+    query += ` ${quote}${migration.table}${quote}`;
+    if (migration.ignoreForeignAndCascade) {
+      query += ' CASCADE';
+    }
+    return `${query};`;
+  };
 
 function mapType(jsonType) {
     const typeMap = {
