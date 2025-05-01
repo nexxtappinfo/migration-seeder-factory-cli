@@ -42,7 +42,7 @@ module.exports = function (database, dbTypes) {
         const seeder = JSON.parse(fs.readFileSync(seederFile, 'utf8'));
   
         for (const seed of seeder.seed) {
-          const { table, factory: factoryFile, execution_count, createOrUpdate, custom, referenceTable } = seed;
+          const { table, factory: factoryFile, execution_count, createOrUpdate, custom, referenceQuery } = seed;
           if (!table) {
             logger.info('Table Not Provided!');
             continue;
@@ -222,9 +222,9 @@ module.exports = function (database, dbTypes) {
                   }
                 }
 
-                if (referenceTable && referenceTable.query && referenceTable.columns) {
-                  let refQ = referenceTable.query;
-                  for (const [placeholder, colName] of Object.entries(referenceTable.columns)) {
+                if (referenceQuery && referenceQuery.query && referenceQuery.columns) {
+                  let refQ = referenceQuery.query;
+                  for (const [placeholder, colName] of Object.entries(referenceQuery.columns)) {
                     const val = columns[colName] || 'NA';
                     refQ = refQ.replace(new RegExp(`\\{${placeholder}\\}`, 'g'), val);
                   }
