@@ -17,6 +17,11 @@ module.exports = function (dbTypes) {
 
       const filePath = path.join(factoryDir, `${fileName}.json`);
 
+      if (fs.existsSync(filePath)) {
+        logger.warn(`⚠️ Factory file already exists with the same name: ${filePath}`);
+        process.exit(1);
+      }
+
       const template = JSON.stringify({
         "columns": [
           {

@@ -11,18 +11,33 @@ const kernel = require('../src/Kernel');
     await kernel.database.getConnection(dbType);
   }
 
+  function validateDB(dbType){
+    const isValidDbType = Object.values(kernel.dbTypes).includes(dbType);
+
+    if(!isValidDbType){
+      logger.error('Error: Please provide a valid DB Type name.');
+      process.exit(1);
+    }
+
+    return true;
+  }
+
   program
     .command('make:migration [fileName]')
     .option('--db <dbType>', 'Specify database type', DEFAULT_DB_TYPE)
     .description('Create a new migration file')
     .action(async (fileName, options) => {
         if (!fileName) {
-            console.error('Error: Please provide a filename.');
+            logger.error('Error: Please provide a filename.');
             process.exit(1);
         }
 
         const dbType = options.db || DEFAULT_DB_TYPE;
-        await kernel.controllers.migrations.createMigration(dbType, fileName);
+
+        if(validateDB(dbType)){
+          await kernel.controllers.migrations.createMigration(dbType, fileName);
+        }
+
     });
 
   program
@@ -31,8 +46,12 @@ const kernel = require('../src/Kernel');
     .description('Run all pending migrations')
     .action(async (fileName, options) => {
       const dbType = options.db || DEFAULT_DB_TYPE;
-      await ensureConnection(dbType);
-      await kernel.controllers.migrations.runMigrations(dbType, fileName);
+      
+      if(validateDB(dbType)) {
+        await ensureConnection(dbType);
+        await kernel.controllers.migrations.runMigrations(dbType, fileName);
+      }
+
     });
 
   program
@@ -41,25 +60,28 @@ const kernel = require('../src/Kernel');
     .description('Migration RollBack')
     .action(async (fileName, options) => {
         const dbType = options.db || DEFAULT_DB_TYPE;
-        await ensureConnection(dbType);
 
-        if (!fileName) {
-            process.stdout.write('Are you sure you want to rollback all migrations? (y/N): ');
-            
-            process.stdin.setEncoding('utf8');
-            process.stdin.once('data', async (data) => {
-                const answer = data.trim().toLowerCase();
-                if (answer !== 'y') {
-                    console.log('rollback process aborted! Please provide the filename you want to run..');
-                    process.exit(1);
-                }
-                await kernel.controllers.migrations.rollbackMigrations(dbType);
-            });
+        if(validateDB(dbType)) {
+          await ensureConnection(dbType);
 
-            return;
+          if (!fileName) {
+              process.stdout.write('Are you sure you want to rollback all migrations? (y/N): ');
+              
+              process.stdin.setEncoding('utf8');
+              process.stdin.once('data', async (data) => {
+                  const answer = data.trim().toLowerCase();
+                  if (answer !== 'y') {
+                      logger.log('rollback process aborted! Please provide the filename you want to run..');
+                      process.exit(1);
+                  }
+                  await kernel.controllers.migrations.rollbackMigrations(dbType);
+              });
+
+              return;
+          }
+
+          await kernel.controllers.migrations.rollbackMigrations(dbType, fileName);
         }
-
-        await kernel.controllers.migrations.rollbackMigrations(dbType, fileName);
     });
 
   program
@@ -67,13 +89,17 @@ const kernel = require('../src/Kernel');
     .option('--db <dbType>', 'Specify database type', DEFAULT_DB_TYPE)
     .description('Create a new seeder file')
     .action(async (fileName, options) => {
+      const dbType = options.db || DEFAULT_DB_TYPE;
+
+      if(validateDB(dbType)) {
         if (!fileName) {
-            console.error('Error: Please provide a filename.');
+            logger.error('Error: Please provide a filename.');
             process.exit(1);
         }
 
-        const dbType = options.db || DEFAULT_DB_TYPE;
         await kernel.controllers.seeders.createSeeder(dbType, fileName);
+      }
+      
     });
 
   program
@@ -81,7 +107,7 @@ const kernel = require('../src/Kernel');
     .description('Create a new factory file')
     .action(async (fileName) => {
         if (!fileName) {
-            console.error('Error: Please provide a filename.');
+            logger.error('Error: Please provide a filename.');
             process.exit(1); 
         }
         await kernel.controllers.factory.createFactory(fileName);
@@ -94,25 +120,28 @@ const kernel = require('../src/Kernel');
     .description('Run seeder')
     .action(async (fileName, options) => {
         const dbType = options.db || DEFAULT_DB_TYPE;
-        await ensureConnection(dbType);
 
-        if (!fileName) {
-            process.stdout.write('Are you sure you want to run all seeders? (y/N): ');
-            
-            process.stdin.setEncoding('utf8');
-            process.stdin.once('data', async (data) => {
-                const answer = data.trim().toLowerCase();
-                if (answer !== 'y') {
-                    console.log('Seeding process aborted! Please provide the filename you want to run..');
-                    process.exit(1);
-                }
-                await kernel.controllers.seeders.runSeeders(dbType);
-            });
+        if(validateDB(dbType)) {
+          await ensureConnection(dbType);
 
-            return;
+          if (!fileName) {
+              process.stdout.write('Are you sure you want to run all seeders? (y/N): ');
+              
+              process.stdin.setEncoding('utf8');
+              process.stdin.once('data', async (data) => {
+                  const answer = data.trim().toLowerCase();
+                  if (answer !== 'y') {
+                      logger.log('Seeding process aborted! Please provide the filename you want to run..');
+                      process.exit(1);
+                  }
+                  await kernel.controllers.seeders.runSeeders(dbType);
+              });
+
+              return;
+          }
+
+          await kernel.controllers.seeders.runSeeders(dbType, fileName);
         }
-
-        await kernel.controllers.seeders.runSeeders(dbType, fileName);
     });
 
   program.parse(process.argv);

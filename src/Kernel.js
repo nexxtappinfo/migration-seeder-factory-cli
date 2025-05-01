@@ -4,6 +4,7 @@ const database = require('../src/config/database.js')(dbTypes);
 const controllers = require('../src/controllers/Index.js')(database, dbTypes);
 
 module.exports = {
+    dbTypes,
     database,
     controllers,
 };

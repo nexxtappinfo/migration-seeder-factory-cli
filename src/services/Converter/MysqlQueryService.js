@@ -57,7 +57,10 @@ function createTableQuery(migration) {
     });
 
     const foreignKeys = (migration.foreignKeys || []).map(fk => {
-        return `CONSTRAINT ${quote}${fk.name}${quote} FOREIGN KEY (${quote}${fk.column}${quote}) REFERENCES ${quote}${fk.referenceTable}${quote} (${quote}${fk.referenceColumn}${quote})`;
+        let constraint = `CONSTRAINT ${quote}${fk.name}${quote} FOREIGN KEY (${quote}${fk.column}${quote}) REFERENCES ${quote}${fk.referenceTable}${quote} (${quote}${fk.referenceColumn}${quote})`;
+        if (fk.onDelete) constraint += ` ON DELETE ${fk.onDelete.toUpperCase()}`;
+        if (fk.onUpdate) constraint += ` ON UPDATE ${fk.onUpdate.toUpperCase()}`;
+        return constraint;
     });
 
     const tableDefinition = `CREATE TABLE IF NOT EXISTS ${quote}${migration.table}${quote} (
@@ -89,6 +92,8 @@ function alterTableQuery(migration) {
             let columnDef = `ADD COLUMN ${quote}${col.name}${quote} ${mapType(col.type)}`;
             if (col.unsigned) columnDef += ' UNSIGNED';
             if (col.nullable === false) columnDef += ' NOT NULL';
+            if (col.after) columnDef += ` AFTER ${quote}${col.after}${quote}`;
+
             return columnDef;
         }));
     }
@@ -97,6 +102,8 @@ function alterTableQuery(migration) {
             let columnDef = `MODIFY COLUMN ${quote}${col.name}${quote} ${mapType(col.type)}`;
             if (col.unsigned) columnDef += ' UNSIGNED';
             if (col.nullable === false) columnDef += ' NOT NULL';
+            if (col.after) columnDef += ` AFTER ${quote}${col.after}${quote}`;
+
             return columnDef;
         }));
     }

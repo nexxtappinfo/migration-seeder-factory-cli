@@ -36,7 +36,7 @@ npx nexxt make:migration create_sites_table --db=mysql
 ```
 For PostgreSQL:
 ```sh
-npx nexxt make:migration create_sites_table --db=postgrey
+npx nexxt make:migration create_sites_table --db=postgres
 ```
 
 
@@ -47,7 +47,7 @@ npx nexxt migrate --db=mysql
 ```
 For PostgreSQL:
 ```sh
-npx nexxt migrate --db=postgrey
+npx nexxt migrate --db=postgres
 ```
 
 #### Run Specific Migration File:
@@ -57,7 +57,7 @@ npx nexxt migrate create_sites_table --db=mysql
 ```
 For PostgreSQL:
 ```sh
-npx nexxt migrate create_sites_table --db=postgrey
+npx nexxt migrate create_sites_table --db=postgres
 ```
 
 
@@ -68,7 +68,7 @@ npx nexxt migrate:rollback --db=mysql
 ```
 For PostgreSQL:
 ```sh
-npx nexxt migrate:rollback --db=postgrey
+npx nexxt migrate:rollback --db=postgres
 ```
 
 #### Rollback Specific Migrations File:
@@ -78,7 +78,7 @@ npx nexxt migrate:rollback create_sites_table --db=mysql
 ```
 For PostgreSQL:
 ```sh
-npx nexxt migrate:rollback create_sites_table --db=postgrey
+npx nexxt migrate:rollback create_sites_table --db=postgres
 ```
 
 
@@ -89,7 +89,7 @@ npx nexxt make:seeder sites_seeder --db=mysql
 ```
 For PostgreSQL:
 ```sh
-npx nexxt make:seeder sites_seeder --db=postgrey
+npx nexxt make:seeder sites_seeder --db=postgres
 ```
 
 
@@ -107,7 +107,7 @@ npx nexxt seed --db=mysql
 ```
 For PostgreSQL:
 ```sh
-npx nexxt seed --db=postgrey
+npx nexxt seed --db=postgres
 ```
 
 #### Run Specific Seeder File:
@@ -117,7 +117,7 @@ npx nexxt seed sites_seeder --db=mysql
 ```
 For PostgreSQL:
 ```sh
-npx nexxt seed sites_seeder --db=postgrey
+npx nexxt seed sites_seeder --db=postgres
 ```
 
 

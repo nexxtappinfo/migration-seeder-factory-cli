@@ -1,5 +1,5 @@
 const DbTypes = {
-    PG: 'postgre',
+    PG: 'postgres',
     MYSQL: 'mysql',
     // MONGODB: 'mongoDB',
 }
