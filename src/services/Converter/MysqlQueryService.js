@@ -135,12 +135,12 @@ function alterTableQuery(migration) {
 }
 
 const dropTableQuery = (migration) => {
-    const quote = '"';
     let query = `DROP TABLE`;
     if (migration.dropIfExists) {
       query += ' IF EXISTS';
     }
-    query += ` ${quote}${migration.table}${quote}`;
+
+    query += ` ${migration.table}`;
     if (migration.ignoreForeignAndCascade) {
       query += ' CASCADE';
     }
